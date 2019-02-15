@@ -6,16 +6,23 @@ function id(x) { return x[0]; }
    function flatten(d) {
 	return d.concat.apply([], a);	
    }
+   function ifEmpty(d) {
+	return d ? ` ${d}` : "";
+   }
+   function makeList(d) {
+	let result = d[1].map(e => e[1])
+	return `${d[0]}-${result}` 
+   }
+   function makeArgList(d) {
+	   console.dir(d);
+	let result = d[1].map (e => e[1]);
+	console.dir(result);
+	return `${d[0]}-${result}`;
+   }
 var grammar = {
     Lexer: undefined,
     ParserRules: [
-    {"name": "main$ebnf$1", "symbols": []},
-    {"name": "main$ebnf$1$subexpression$1", "symbols": ["__", "number"]},
-    {"name": "main$ebnf$1", "symbols": ["main$ebnf$1", "main$ebnf$1$subexpression$1"], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
-    {"name": "main", "symbols": ["number", "main$ebnf$1"], "postprocess":  d => { 
-        	let result = d[1].map(e => e[1])
-        	return `${d[0]}-${result}` 
-        } },
+    {"name": "main", "symbols": ["arglist"]},
     {"name": "nameList$ebnf$1", "symbols": []},
     {"name": "nameList$ebnf$1$subexpression$1", "symbols": ["__", "name"]},
     {"name": "nameList$ebnf$1", "symbols": ["nameList$ebnf$1", "nameList$ebnf$1$subexpression$1"], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
@@ -126,15 +133,15 @@ var grammar = {
     {"name": "comp_op", "symbols": ["comp_op$subexpression$1"], "postprocess": id},
     {"name": "star_expr", "symbols": [{"literal":"*"}, "_", "expr"], "postprocess": d => `* ${d[2]}`},
     {"name": "expr$ebnf$1", "symbols": []},
-    {"name": "expr$ebnf$1$subexpression$1", "symbols": [{"literal":"|"}, "xor_expr"]},
+    {"name": "expr$ebnf$1$subexpression$1", "symbols": [{"literal":"|"}, "_", "xor_expr"]},
     {"name": "expr$ebnf$1", "symbols": ["expr$ebnf$1", "expr$ebnf$1$subexpression$1"], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
     {"name": "expr", "symbols": ["xor_expr", "_", "expr$ebnf$1"], "postprocess": id},
     {"name": "xor_expr$ebnf$1", "symbols": []},
-    {"name": "xor_expr$ebnf$1$subexpression$1", "symbols": [{"literal":"^"}, "and_expr"]},
+    {"name": "xor_expr$ebnf$1$subexpression$1", "symbols": [{"literal":"^"}, "_", "and_expr"]},
     {"name": "xor_expr$ebnf$1", "symbols": ["xor_expr$ebnf$1", "xor_expr$ebnf$1$subexpression$1"], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
     {"name": "xor_expr", "symbols": ["and_expr", "_", "xor_expr$ebnf$1"], "postprocess": id},
     {"name": "and_expr$ebnf$1", "symbols": []},
-    {"name": "and_expr$ebnf$1$subexpression$1", "symbols": [{"literal":"&"}, "shift_expr"]},
+    {"name": "and_expr$ebnf$1$subexpression$1", "symbols": [{"literal":"&"}, "_", "shift_expr"]},
     {"name": "and_expr$ebnf$1", "symbols": ["and_expr$ebnf$1", "and_expr$ebnf$1$subexpression$1"], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
     {"name": "and_expr", "symbols": ["shift_expr", "_", "and_expr$ebnf$1"], "postprocess": id},
     {"name": "shift_expr$ebnf$1", "symbols": []},
@@ -167,7 +174,7 @@ var grammar = {
     {"name": "factor", "symbols": ["factor$subexpression$1", "_", "factor"]},
     {"name": "factor", "symbols": ["power"], "postprocess": id},
     {"name": "power$ebnf$1$subexpression$1$string$1", "symbols": [{"literal":"*"}, {"literal":"*"}], "postprocess": function joiner(d) {return d.join('');}},
-    {"name": "power$ebnf$1$subexpression$1", "symbols": ["power$ebnf$1$subexpression$1$string$1", "factor"]},
+    {"name": "power$ebnf$1$subexpression$1", "symbols": ["power$ebnf$1$subexpression$1$string$1", "_", "factor"]},
     {"name": "power$ebnf$1", "symbols": ["power$ebnf$1$subexpression$1"], "postprocess": id},
     {"name": "power$ebnf$1", "symbols": [], "postprocess": function(d) {return null;}},
     {"name": "power", "symbols": ["atom_expr", "_", "power$ebnf$1"], "postprocess": id},
@@ -246,14 +253,14 @@ var grammar = {
     {"name": "testlist$ebnf$2", "symbols": [], "postprocess": function(d) {return null;}},
     {"name": "testlist", "symbols": ["test", "_", "testlist$ebnf$1", "_", "testlist$ebnf$2"], "postprocess": id},
     {"name": "arglist$ebnf$1", "symbols": []},
-    {"name": "arglist$ebnf$1$subexpression$1", "symbols": [{"literal":","}, "argument"]},
+    {"name": "arglist$ebnf$1$subexpression$1", "symbols": [{"literal":","}, "_", "argument"]},
     {"name": "arglist$ebnf$1", "symbols": ["arglist$ebnf$1", "arglist$ebnf$1$subexpression$1"], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
     {"name": "arglist$ebnf$2", "symbols": [{"literal":","}], "postprocess": id},
     {"name": "arglist$ebnf$2", "symbols": [], "postprocess": function(d) {return null;}},
-    {"name": "arglist", "symbols": ["argument", "_", "arglist$ebnf$1", "_", "arglist$ebnf$2"], "postprocess": id},
+    {"name": "arglist", "symbols": ["argument", "_", "arglist$ebnf$1", "_", "arglist$ebnf$2"], "postprocess": d => makeArgList(d)},
     {"name": "argument$subexpression$1$ebnf$1", "symbols": ["comp_for"], "postprocess": id},
     {"name": "argument$subexpression$1$ebnf$1", "symbols": [], "postprocess": function(d) {return null;}},
-    {"name": "argument$subexpression$1", "symbols": ["test", "_", "argument$subexpression$1$ebnf$1"], "postprocess": d => {console.log('test'); return d;}},
+    {"name": "argument$subexpression$1", "symbols": ["test", "_", "argument$subexpression$1$ebnf$1"], "postprocess": d => { return `${d[0]}${ifEmpty(d[2])}`; }},
     {"name": "argument$subexpression$1", "symbols": ["test", "_", {"literal":"="}, "_", "test"], "postprocess": d => `${d[0]} = ${d[4]}`},
     {"name": "argument$subexpression$1$string$1", "symbols": [{"literal":"*"}, {"literal":"*"}], "postprocess": function joiner(d) {return d.join('');}},
     {"name": "argument$subexpression$1", "symbols": ["argument$subexpression$1$string$1", "_", "test"], "postprocess": d => `^ ${d[2]}`},
@@ -269,11 +276,11 @@ var grammar = {
     {"name": "comp_for$ebnf$1$string$1", "symbols": [{"literal":"a"}, {"literal":"s"}, {"literal":"y"}, {"literal":"n"}, {"literal":"c"}], "postprocess": function joiner(d) {return d.join('');}},
     {"name": "comp_for$ebnf$1", "symbols": ["comp_for$ebnf$1$string$1"], "postprocess": id},
     {"name": "comp_for$ebnf$1", "symbols": [], "postprocess": function(d) {return null;}},
-    {"name": "comp_for", "symbols": ["comp_for$ebnf$1", "_", "sync_comp_for"], "postprocess": d => `${d[2]}`},
+    {"name": "comp_for", "symbols": ["comp_for$ebnf$1", "_", "sync_comp_for"], "postprocess": d => `${ifEmpty(d[0])}${d[2]}`},
     {"name": "comp_if$string$1", "symbols": [{"literal":"i"}, {"literal":"f"}], "postprocess": function joiner(d) {return d.join('');}},
     {"name": "comp_if$ebnf$1", "symbols": ["comp_iter"], "postprocess": id},
     {"name": "comp_if$ebnf$1", "symbols": [], "postprocess": function(d) {return null;}},
-    {"name": "comp_if", "symbols": ["comp_if$string$1", "_", "test_nocond", "_", "comp_if$ebnf$1"], "postprocess": d => `if (${d[2]}) ${d[4]}`},
+    {"name": "comp_if", "symbols": ["comp_if$string$1", "_", "test_nocond", "_", "comp_if$ebnf$1"], "postprocess": d => `if (${d[2]})${d[4]}`},
     {"name": "name$ebnf$1$subexpression$1", "symbols": [/[a-zA-Z_]/]},
     {"name": "name$ebnf$1", "symbols": ["name$ebnf$1$subexpression$1"]},
     {"name": "name$ebnf$1$subexpression$2", "symbols": [/[a-zA-Z_]/]},

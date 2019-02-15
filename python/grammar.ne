@@ -1,8 +1,4 @@
-main -> number (__ number):*  {% d => { 
-	let result = d[1].map(e => e[1])
-	return `${d[0]}-${result}` 
-} %}
-
+main -> arglist  
 nameList -> name (__ name):* {% d => { 
 	let result = d[1].map(e => e[1])
 	return `${d[0]}-${result}` 
@@ -36,14 +32,14 @@ comp_op -> ("<" |
            "is"|
            "is" "not") {% id %}
 star_expr -> "*" _ expr {% d => `* ${d[2]}` %}
-expr -> xor_expr _ ("|" xor_expr):* {% id %}
-xor_expr -> and_expr _ ("^" and_expr):* {% id %}
-and_expr -> shift_expr _ ("&" shift_expr):* {% id %}
+expr -> xor_expr _ ("|" _ xor_expr):* {% id %}
+xor_expr -> and_expr _ ("^" _ and_expr):* {% id %}
+and_expr -> shift_expr _ ("&" _ shift_expr):* {% id %}
 shift_expr -> arith_expr _ (("<<"|">>") _ arith_expr):* {% id %}
 arith_expr -> term _ (("+"|"-") _ term):* {% id %}
 term -> factor _ (("*"|"@"|"/"|"%"|"//") _ factor):* {% id %}
 factor -> ("+"|"-"|"~") _ factor | power {% id %}
-power -> atom_expr _ ("**" factor):? {% id %}
+power -> atom_expr _ ("**" _ factor):? {% id %}
 atom_expr -> ("await"):? _ atom _ trailer:* {% d => {console.log(`amir`); JSON.stringify(d); return d} %}
 atom -> ( "[" _ testlist_comp:? _ "]" |
        name | number | string:+ | "..." | "None" | "True" | "False") {% id %}
@@ -56,9 +52,9 @@ subscript -> test {% id %}
 sliceop -> ":" _ test:? {% d => `: ${d[2]}` %}
 exprlist -> (expr|star_expr) _ ("," _ (expr|star_expr)):* _ ",":? {% id %}
 testlist -> test _ ("," test):* _ ",":? {% id %}
-arglist -> argument _ ("," argument):* _ ",":? {% id %}
+arglist -> argument _ ("," _ argument):* _ ",":? {% d => makeArgList(d) %}
 
-argument -> ( test _ comp_for:? {% d => {console.log('test'); return d;} %} 
+argument -> ( test _ comp_for:? {% d => { return `${d[0]}${ifEmpty(d[2])}`; } %} 
            | test _ "="  _ test {% d => `${d[0]} = ${d[4]}`%} 
            | "**" _ test  {% d => `^ ${d[2]}`%}
            | "*" _ test {% d => `* ${d[2]}`%}) 
@@ -67,8 +63,8 @@ comp_iter -> comp_for {% id %} |
              comp_if {% id %}
 #sync_comp_for -> "for" _ exprlist _ "in" _ or_test _ comp_iter:? {% d => `for ${d[2]} in ${d[6]}` %}
 sync_comp_for -> "for" _ exprlist _ "in" _ or_test _ comp_iter:? {% d => flatten(d) %}
-comp_for -> "async":? _ sync_comp_for {% d => `${d[2]}` %}
-comp_if -> "if" _ test_nocond _ comp_iter:? {% d => `if (${d[2]}) ${d[4]}` %}
+comp_for -> "async":? _ sync_comp_for {% d => `${ifEmpty(d[0])}${d[2]}` %}
+comp_if -> "if" _ test_nocond _ comp_iter:? {% d => `if (${d[2]})${d[4]}` %}
 
 name -> ([a-zA-Z_]):+ {% d =>  d[0].join("")  %}
 
@@ -110,5 +106,18 @@ wschar -> [ \t\n\v\f] {% id %}
 @{%
    function flatten(d) {
 	return d.concat.apply([], a);	
+   }
+   function ifEmpty(d) {
+	return d ? ` ${d}` : "";
+   }
+   function makeList(d) {
+	let result = d[1].map(e => e[1])
+	return `${d[0]}-${result}` 
+   }
+   function makeArgList(d) {
+	   console.dir(d);
+	let result = d[1].map (e => e[1]);
+	console.dir(result);
+	return `${d[0]}-${result}`;
    }
 %}
