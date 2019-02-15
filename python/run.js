@@ -29,4 +29,5 @@ function runmath(s) {
     }
 }
  
-console.log(runmath("ehsan ammmir kashkian araceli yoel"))
+//console.log(runmath("ehsan ammmir kashkian araceli yoel"))
+console.log(runmath("-12.2e13 23 445 123"))
