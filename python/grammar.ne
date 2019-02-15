@@ -54,10 +54,10 @@ exprlist -> (expr|star_expr) _ ("," _ (expr|star_expr)):* _ ",":? {% id %}
 testlist -> test _ ("," test):* _ ",":? {% id %}
 arglist -> argument _ ("," _ argument):* _ ",":? {% d => makeArgList(d) %}
 
-argument -> ( test _ comp_for:? {% d => { return `${d[0]}${ifEmpty(d[2])}`; } %} 
-           | test _ "="  _ test {% d => `${d[0]} = ${d[4]}`%} 
-           | "**" _ test  {% d => `^ ${d[2]}`%}
-           | "*" _ test {% d => `* ${d[2]}`%}) 
+argument -> ( test _ comp_for:? {% d => { console.log('main'); return `${d[0]}${ifEmpty(d[2])}`; } %} 
+           | test _ "="  _ test {% d => {console.log('test=test'); return`${d[0]} = ${d[4]}`}%} 
+           | "**" _ test  {% d => { console.log('** test'); return `^ ${d[2]}` } %}
+           | "*" _ test {% d => {console.log('* test'); return`* ${d[2]}` } %}) 
 
 comp_iter -> comp_for {% id %} | 
              comp_if {% id %}
@@ -115,7 +115,7 @@ wschar -> [ \t\n\v\f] {% id %}
 	return `${d[0]}-${result}` 
    }
    function makeArgList(d) {
-	   console.dir(d);
+	console.dir(d);
 	let result = d[1].map (e => e[1]);
 	console.dir(result);
 	return `${d[0]}-${result}`;

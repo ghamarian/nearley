@@ -14,7 +14,7 @@ function id(x) { return x[0]; }
 	return `${d[0]}-${result}` 
    }
    function makeArgList(d) {
-	   console.dir(d);
+	console.dir(d);
 	let result = d[1].map (e => e[1]);
 	console.dir(result);
 	return `${d[0]}-${result}`;
@@ -260,11 +260,11 @@ var grammar = {
     {"name": "arglist", "symbols": ["argument", "_", "arglist$ebnf$1", "_", "arglist$ebnf$2"], "postprocess": d => makeArgList(d)},
     {"name": "argument$subexpression$1$ebnf$1", "symbols": ["comp_for"], "postprocess": id},
     {"name": "argument$subexpression$1$ebnf$1", "symbols": [], "postprocess": function(d) {return null;}},
-    {"name": "argument$subexpression$1", "symbols": ["test", "_", "argument$subexpression$1$ebnf$1"], "postprocess": d => { return `${d[0]}${ifEmpty(d[2])}`; }},
-    {"name": "argument$subexpression$1", "symbols": ["test", "_", {"literal":"="}, "_", "test"], "postprocess": d => `${d[0]} = ${d[4]}`},
+    {"name": "argument$subexpression$1", "symbols": ["test", "_", "argument$subexpression$1$ebnf$1"], "postprocess": d => { console.log('main'); return `${d[0]}${ifEmpty(d[2])}`; }},
+    {"name": "argument$subexpression$1", "symbols": ["test", "_", {"literal":"="}, "_", "test"], "postprocess": d => {console.log('test=test'); return`${d[0]} = ${d[4]}`}},
     {"name": "argument$subexpression$1$string$1", "symbols": [{"literal":"*"}, {"literal":"*"}], "postprocess": function joiner(d) {return d.join('');}},
-    {"name": "argument$subexpression$1", "symbols": ["argument$subexpression$1$string$1", "_", "test"], "postprocess": d => `^ ${d[2]}`},
-    {"name": "argument$subexpression$1", "symbols": [{"literal":"*"}, "_", "test"], "postprocess": d => `* ${d[2]}`},
+    {"name": "argument$subexpression$1", "symbols": ["argument$subexpression$1$string$1", "_", "test"], "postprocess": d => { console.log('** test'); return `^ ${d[2]}` }},
+    {"name": "argument$subexpression$1", "symbols": [{"literal":"*"}, "_", "test"], "postprocess": d => {console.log('* test'); return`* ${d[2]}` }},
     {"name": "argument", "symbols": ["argument$subexpression$1"]},
     {"name": "comp_iter", "symbols": ["comp_for"], "postprocess": id},
     {"name": "comp_iter", "symbols": ["comp_if"], "postprocess": id},
